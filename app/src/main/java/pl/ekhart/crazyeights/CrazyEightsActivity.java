@@ -12,6 +12,7 @@ public class CrazyEightsActivity extends Activity {
 
 //        CrazyEightsView view = new CrazyEightsView(this);
         TitleView view = new TitleView(this);
+        view.setKeepScreenOn(true);
         setContentView(view);
     }
 }
