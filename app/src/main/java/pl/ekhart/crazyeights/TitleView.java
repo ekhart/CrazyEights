@@ -12,21 +12,30 @@ import android.view.View;
  */
 public class TitleView extends View {
 
-    private Bitmap titleGraphic;
-    private int screenWidth, screenHeight;
+    private Bitmap titleGraphic,
+        playButtonUp;
+    private int screenWidth,
+        screenHeight;
 
     public TitleView(Context context) {
         super(context);
 
-        titleGraphic = BitmapFactory.decodeResource(
-                getResources(), R.drawable.title_graphic);
+        titleGraphic = getBitmap(R.drawable.title_graphic);
+        playButtonUp = getBitmap(R.drawable.play_button_up);
+    }
+
+    private Bitmap getBitmap(int drawableId) {
+        return BitmapFactory.decodeResource(getResources(), drawableId);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        int horizontalCenter = (screenWidth - titleGraphic.getWidth()) / 2;
-//        int verticalCenter = (screenHeight - titleGraphic.getHeight()) / 2;
-        canvas.drawBitmap(titleGraphic, horizontalCenter, 0, null);
+        canvas.drawBitmap(titleGraphic, horizontalCenter(titleGraphic), 0, null);
+        canvas.drawBitmap(playButtonUp, horizontalCenter(playButtonUp), (int) (screenHeight * .7), null );
+    }
+
+    private int horizontalCenter(Bitmap bitmap) {
+        return (screenWidth - bitmap.getWidth()) / 2;
     }
 
     @Override
