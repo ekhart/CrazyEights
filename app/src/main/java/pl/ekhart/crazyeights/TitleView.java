@@ -25,6 +25,7 @@ public class TitleView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         int horizontalCenter = (screenWidth - titleGraphic.getWidth()) / 2;
+//        int verticalCenter = (screenHeight - titleGraphic.getHeight()) / 2;
         canvas.drawBitmap(titleGraphic, horizontalCenter, 0, null);
     }
 
