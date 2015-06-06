@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Pair;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -13,7 +14,7 @@ import android.view.View;
 public class CrazyEightsView extends View {
 
     private Paint redPaint;
-    private Pair<Integer, Integer> circlePlace;
+    private int circleX, circleY;
     private float radius;
 
     public CrazyEightsView(Context context) {
@@ -23,13 +24,41 @@ public class CrazyEightsView extends View {
         redPaint.setAntiAlias(true);
         redPaint.setColor(Color.RED);
 
-        circlePlace = new Pair<>(100, 100);
+        circleX = 100;
+        circleY = 100;
         radius = 30;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-        canvas.drawCircle(circlePlace.first, circlePlace.second, radius, redPaint);
+        canvas.drawCircle(circleX, circleY, radius, redPaint);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        int x = (int) event.getX();
+        int y = (int) event.getY();
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                circleX = x;
+                circleY = y;
+                break;
+
+            case MotionEvent.ACTION_UP:
+                circleX = x;
+                circleY = y;
+                break;
+
+
+        }
+
+        invalidate();
+
+        return true;
     }
 }
