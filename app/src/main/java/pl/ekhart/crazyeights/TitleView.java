@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -12,16 +13,22 @@ import android.view.View;
  */
 public class TitleView extends View {
 
-    private Bitmap titleGraphic,
-        playButtonUp;
     private int screenWidth,
-        screenHeight;
+            screenHeight;
+
+    private Bitmap titleGraphic,
+        playButtonUp,
+        playButtonDown;
+    private int playButtonTop;
+    private boolean playButtonPressed;
+
 
     public TitleView(Context context) {
         super(context);
 
         titleGraphic = getBitmap(R.drawable.title_graphic);
         playButtonUp = getBitmap(R.drawable.play_button_up);
+        playButtonDown = getBitmap(R.drawable.play_button_down);
     }
 
     private Bitmap getBitmap(int drawableId) {
@@ -30,8 +37,11 @@ public class TitleView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        playButtonTop = (int) (screenHeight * .7);
         canvas.drawBitmap(titleGraphic, horizontalCenter(titleGraphic), 0, null);
-        canvas.drawBitmap(playButtonUp, horizontalCenter(playButtonUp), (int) (screenHeight * .7), null );
+
+        Bitmap playButton = playButtonPressed ? playButtonDown : playButtonUp;
+        canvas.drawBitmap(playButton, horizontalCenter(playButton), playButtonTop, null);
     }
 
     private int horizontalCenter(Bitmap bitmap) {
@@ -46,26 +56,34 @@ public class TitleView extends View {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
         int action = event.getAction();
         int x = (int) event.getX();
         int y = (int) event.getY();
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                playButtonPressed = playButtonPressed(x, y);
                 break;
 
             case MotionEvent.ACTION_MOVE:
                 break;
 
             case MotionEvent.ACTION_UP:
+                playButtonPressed = false;
                 break;
-
-
         }
 
         invalidate();
 
         return true;
+    }
+
+    private boolean playButtonPressed(int x, int y) {
+        int center = horizontalCenter(playButtonUp);
+        return x > center &&
+            x < (center + playButtonUp.getWidth()) &&
+            y > playButtonTop &&
+            y < (playButtonTop + playButtonUp.getHeight());
     }
 }
