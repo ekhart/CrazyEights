@@ -84,6 +84,7 @@ public class GameView extends View {
         initCards();
         loadCardBack();
         dealCards();
+        drawCard(discardPile);
     }
 
     private void loadCardBack() {
@@ -97,6 +98,16 @@ public class GameView extends View {
         drawMyHand(canvas);
         drawOppHand(canvas);
         drawDrawPile(canvas);
+        drawDiscardPile(canvas);
+    }
+
+    private void drawDiscardPile(Canvas canvas) {
+        if (!discardPile.isEmpty()) {
+            Bitmap topCard = discardPile.get(0).getBitmap();
+            int left = screenWidth / 2 + 10,
+                top = (screenHeight / 2) - (cardBack.getHeight() / 2);
+            canvas.drawBitmap(topCard, left, top, null);
+        }
     }
 
     private void drawDrawPile(Canvas canvas) {
