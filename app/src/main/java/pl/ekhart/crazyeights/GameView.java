@@ -35,6 +35,7 @@ public class GameView extends View {
     private Paint blackPaint;
 
     private int myScore, oppScore;
+    private Bitmap cardBack;
 
     public GameView(Context context) {
         super(context);
@@ -62,13 +63,17 @@ public class GameView extends View {
                 int resourceId = getResources()
                         .getIdentifier("card" + id, "drawable", context.getPackageName());
                 Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resourceId);
-                scaledCardWidth = screenWidth / 8;
-                scaledCardHeight = (int) (scaledCardWidth * 1.28);
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledCardWidth, scaledCardHeight, false);
+                Bitmap scaledBitmap = getScaledCardBitmap(bitmap);
                 card.setBitmap(scaledBitmap);
                 deck.add(card);
             }
         }
+    }
+
+    private Bitmap getScaledCardBitmap(Bitmap bitmap) {
+        scaledCardWidth = screenWidth / 8;
+        scaledCardHeight = (int) (scaledCardWidth * 1.28);
+        return Bitmap.createScaledBitmap(bitmap, scaledCardWidth, scaledCardHeight, false);
     }
 
     @Override
@@ -77,13 +82,28 @@ public class GameView extends View {
         screenWidth = w;
         screenHeight = h;
         initCards();
+        loadCardBack();
         dealCards();
+    }
+
+    private void loadCardBack() {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.card_back);
+        cardBack = getScaledCardBitmap(bitmap);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         drawScores(canvas);
         drawMyHand(canvas);
+        drawOppHand(canvas);
+    }
+
+    private void drawOppHand(Canvas canvas) {
+        for (int i = 0; i < myHand.size(); ++i) {
+                int left = (int) (i * (scale * 5)),
+                    top = (int) (blackPaint.getTextSize() + (50 * scale));
+                canvas.drawBitmap(cardBack, left, top, null);
+        }
     }
 
     private void drawMyHand(Canvas canvas) {
@@ -106,7 +126,7 @@ public class GameView extends View {
     private void drawScores(Canvas canvas) {
         canvas.drawText("Computer Score: " + oppScore,
                 10, blackPaint.getTextSize() + 10, blackPaint);
-        canvas.drawText("My Score: " + 10,
+        canvas.drawText("My Score: " + myScore,
                 10, screenHeight - blackPaint.getTextSize(), blackPaint);
     }
 
