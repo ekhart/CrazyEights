@@ -27,6 +27,7 @@ public class GameView extends View {
         myHand = new ArrayList<>(),
         oppHand = new ArrayList<>(),
         discardPile = new ArrayList<>();
+    final int CARDS_TO_DEAL = 7;
 
     private int scaledCardWidth, scaledCardHeight;
 
@@ -81,11 +82,32 @@ public class GameView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        drawScores(canvas);
+        drawMyHand(canvas);
+    }
+
+    private void drawMyHand(Canvas canvas) {
+        for (int i = 0; i < myHand.size(); ++i) {
+            if (i < CARDS_TO_DEAL) {
+                Bitmap bitmap = myHand.get(i).getBitmap();
+                int left = i * (scaledCardWidth + 5);
+                canvas.drawBitmap(bitmap, left, getCardTop(), null);
+            }
+        }
+    }
+
+    private int getCardTop() {
+        return (int) (screenHeight
+                - scaledCardHeight
+                - blackPaint.getTextSize()
+                - (50 * scale));
+    }
+
+    private void drawScores(Canvas canvas) {
         canvas.drawText("Computer Score: " + oppScore,
                 10, blackPaint.getTextSize() + 10, blackPaint);
         canvas.drawText("My Score: " + 10,
                 10, screenHeight - blackPaint.getTextSize(), blackPaint);
-//        canvas.drawBitmap(deck.get(0).getBitmap(), 0, 0, null);
     }
 
     @Override
@@ -124,7 +146,6 @@ public class GameView extends View {
 
     private void dealCards() {
         Collections.shuffle(deck);
-        final int CARDS_TO_DEAL = 7;
         for (int i = 0; i < CARDS_TO_DEAL; ++i) {
             drawCard(myHand);
             drawCard(oppHand);
