@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,12 +28,29 @@ public class GameView extends View {
         oppHand = new ArrayList<>(),
         discardPile = new ArrayList<>();
 
-
     private int scaledCardWidth, scaledCardHeight;
+
+    private float scale;
+    private Paint blackPaint;
+
+    private int myScore, oppScore;
 
     public GameView(Context context) {
         super(context);
         this.context = context;
+
+        scale = context.getResources().getDisplayMetrics().density;
+        blackPaint = getPaint();
+    }
+
+    private Paint getPaint() {
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setTextAlign(Paint.Align.LEFT);
+        paint.setTextSize(scale * 15);
+        return paint;
     }
 
     private void initCards() {
@@ -62,7 +81,11 @@ public class GameView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(deck.get(0).getBitmap(), 0, 0, null);
+        canvas.drawText("Computer Score: " + oppScore,
+                10, blackPaint.getTextSize() + 10, blackPaint);
+        canvas.drawText("My Score: " + 10,
+                10, screenHeight - blackPaint.getTextSize(), blackPaint);
+//        canvas.drawBitmap(deck.get(0).getBitmap(), 0, 0, null);
     }
 
     @Override

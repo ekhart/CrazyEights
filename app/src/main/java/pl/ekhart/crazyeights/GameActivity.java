@@ -16,6 +16,7 @@ public class GameActivity extends Activity {
 
         GameView view = new GameView(this);
         view.setKeepScreenOn(true);
+//        view.setBackgroundColor(Color.BLACK);
         setFullscreen();
 
         setContentView(view);
