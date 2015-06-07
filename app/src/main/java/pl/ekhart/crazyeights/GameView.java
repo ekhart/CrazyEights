@@ -1,23 +1,61 @@
 package pl.ekhart.crazyeights;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Ekh on 2015-06-07.
  */
 public class GameView extends View {
 
+    private int screenWidth,
+            screenHeight;
+    private Context context;
+    private List<Card> deck = new ArrayList<>();
+    private int scaledCardWidth, scaledCardHeight;
+
     public GameView(Context context) {
         super(context);
+        this.context = context;
+    }
+
+    private void initCards() {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 102; j < 115; ++j) {
+                int id = j + (i * 100);
+                Card card = new Card(id);
+                int resourceId = getResources()
+                        .getIdentifier("card" + id, "drawable", context.getPackageName());
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resourceId);
+                scaledCardWidth = screenWidth / 8;
+                scaledCardHeight = (int) (scaledCardWidth * 1.28);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledCardWidth, scaledCardHeight, false);
+                card.setBitmap(scaledBitmap);
+                deck.add(card);
+            }
+        }
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        screenWidth = w;
+        screenHeight = h;
+        initCards();
+    }
 
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.drawBitmap(deck.get(0).getBitmap(), 0, 0, null);
     }
 
     @Override
