@@ -96,6 +96,13 @@ public class GameView extends View {
         drawScores(canvas);
         drawMyHand(canvas);
         drawOppHand(canvas);
+        drawDrawPile(canvas);
+    }
+
+    private void drawDrawPile(Canvas canvas) {
+        int left = (screenWidth / 2) - cardBack.getWidth() - 10,
+            top = (screenHeight / 2) - (cardBack.getHeight() / 2);
+        canvas.drawBitmap(cardBack, left, top, null);
     }
 
     private void drawOppHand(Canvas canvas) {
