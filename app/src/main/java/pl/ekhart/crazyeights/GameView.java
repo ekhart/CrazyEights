@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,7 +20,13 @@ public class GameView extends View {
     private int screenWidth,
             screenHeight;
     private Context context;
-    private List<Card> deck = new ArrayList<>();
+
+    private List<Card> deck = new ArrayList<>(),
+        myHand = new ArrayList<>(),
+        oppHand = new ArrayList<>(),
+        discardPile = new ArrayList<>();
+
+
     private int scaledCardWidth, scaledCardHeight;
 
     public GameView(Context context) {
@@ -50,8 +57,8 @@ public class GameView extends View {
         screenWidth = w;
         screenHeight = h;
         initCards();
+        dealCards();
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -78,5 +85,26 @@ public class GameView extends View {
         invalidate();
 
         return true;
+    }
+
+    private void drawCard(List<Card> handToDraw) {
+        handToDraw.add(0, deck.get(0));
+        deck.remove(0);
+        if (deck.isEmpty()) {
+            for (int i = discardPile.size() - 1; i > 0; --i) {
+                deck.add(discardPile.get(0));
+                discardPile.remove(0);
+                Collections.shuffle(deck);
+            }
+        }
+    }
+
+    private void dealCards() {
+        Collections.shuffle(deck);
+        final int CARDS_TO_DEAL = 7;
+        for (int i = 0; i < CARDS_TO_DEAL; ++i) {
+            drawCard(myHand);
+            drawCard(oppHand);
+        }
     }
 }
