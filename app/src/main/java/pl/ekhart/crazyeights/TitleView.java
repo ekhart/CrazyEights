@@ -1,6 +1,7 @@
 package pl.ekhart.crazyeights;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -22,9 +23,11 @@ public class TitleView extends View {
     private int playButtonTop;
     private boolean playButtonPressed;
 
+    private Context context;
 
     public TitleView(Context context) {
         super(context);
+        this.context = context;
 
         titleGraphic = getBitmap(R.drawable.title_graphic);
         playButtonUp = getBitmap(R.drawable.play_button_up);
@@ -70,6 +73,10 @@ public class TitleView extends View {
                 break;
 
             case MotionEvent.ACTION_UP:
+                if (playButtonPressed) {
+                    Intent gameIntent = new Intent(context, GameActivity.class);
+                    context.startActivity(gameIntent);
+                }
                 playButtonPressed = false;
                 break;
         }
