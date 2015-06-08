@@ -13,6 +13,7 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Ekh on 2015-06-07.
@@ -37,12 +38,15 @@ public class GameView extends View {
     private int myScore, oppScore;
     private Bitmap cardBack;
 
+    private boolean myTurn;
+
     public GameView(Context context) {
         super(context);
         this.context = context;
 
         scale = context.getResources().getDisplayMetrics().density;
         blackPaint = getPaint();
+        myTurn = new Random().nextBoolean();
     }
 
     private Paint getPaint() {

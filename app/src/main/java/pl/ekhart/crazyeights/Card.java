@@ -7,7 +7,9 @@ import android.graphics.Bitmap;
  */
 public class Card {
 
-    private int id;
+    private int id,
+        suit,
+        rank;
     private Bitmap bitmap;
 
     public int getId() {
@@ -24,5 +26,15 @@ public class Card {
 
     public Card(int id) {
         this.id = id;
+        suit = Math.round((id / 100) * 100);
+        rank = id - suit;
+    }
+
+    public int getSuit() {
+        return suit;
+    }
+
+    public int getRank() {
+        return rank;
     }
 }
