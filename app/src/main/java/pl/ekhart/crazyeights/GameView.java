@@ -13,7 +13,6 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by Ekh on 2015-06-07.
@@ -40,13 +39,17 @@ public class GameView extends View {
 
     private boolean myTurn;
 
+    private int movingCardId = -1,
+        movingX, movingY;
+
     public GameView(Context context) {
         super(context);
         this.context = context;
 
         scale = context.getResources().getDisplayMetrics().density;
         blackPaint = getPaint();
-        myTurn = new Random().nextBoolean();
+        //myTurn = new Random().nextBoolean();
+        myTurn = true;
     }
 
     private Paint getPaint() {
@@ -99,10 +102,22 @@ public class GameView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         drawScores(canvas);
-        drawMyHand(canvas);
+        //drawMyHand(canvas);
         drawOppHand(canvas);
         drawDrawPile(canvas);
         drawDiscardPile(canvas);
+        moveCard(canvas);
+    }
+
+    private void moveCard(Canvas canvas) {
+        for (int i = 0; i < myHand.size(); ++i) {
+            Bitmap bitmap = myHand.get(i).getBitmap();
+            boolean isMovingCard = i == movingCardId;
+            int left = isMovingCard ? movingX : getCardLeft(i),
+                top = isMovingCard ? movingY : getCardTop();
+                canvas.drawBitmap(bitmap, left, top, null);
+        }
+        invalidate();
     }
 
     private void drawDiscardPile(Canvas canvas) {
@@ -132,10 +147,14 @@ public class GameView extends View {
         for (int i = 0; i < myHand.size(); ++i) {
             if (i < CARDS_TO_DEAL) {
                 Bitmap bitmap = myHand.get(i).getBitmap();
-                int left = i * (scaledCardWidth + 5);
+                int left = getCardLeft(i);
                 canvas.drawBitmap(bitmap, left, getCardTop(), null);
             }
         }
+    }
+
+    private int getCardLeft(int i) {
+        return i * (scaledCardWidth + 5);
     }
 
     private int getCardTop() {
@@ -160,18 +179,47 @@ public class GameView extends View {
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                setMovingIdIfMyTurn(x, y);
                 break;
 
             case MotionEvent.ACTION_MOVE:
+                movingX = x - offset(30);
+                movingY = y - offset(70);
                 break;
 
             case MotionEvent.ACTION_UP:
+                movingCardId = -1;
                 break;
         }
 
         invalidate();
 
         return true;
+    }
+
+    private int offset(int i) {
+        return (int) (i * scale);
+    }
+
+    private void setMovingIdIfMyTurn(int x, int y) {
+        if (!myTurn) {
+            return;
+        }
+
+        for (int i = 0; i < CARDS_TO_DEAL; ++i) {
+            if (cardClicked(i, x, y)) {
+                movingCardId = i;
+                movingX = x - offset(30);
+                movingY = y - offset(70);
+            }
+        }
+    }
+
+    private boolean cardClicked(int i, int x, int y) {
+        int width = getCardLeft(i);
+        return x > width &&
+            x < (width + scaledCardWidth) &&
+            y > getCardTop();
     }
 
     private void drawCard(List<Card> handToDraw) {
