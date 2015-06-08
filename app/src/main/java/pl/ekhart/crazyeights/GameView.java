@@ -42,6 +42,9 @@ public class GameView extends View {
     private int movingCardId = -1,
         movingX, movingY;
 
+    private int validRank = 8,
+        validSuit = 0;
+
     public GameView(Context context) {
         super(context);
         this.context = context;
@@ -92,6 +95,10 @@ public class GameView extends View {
         loadCardBack();
         dealCards();
         drawCard(discardPile);
+
+        Card card = discardPile.get(0);
+        validSuit = card.getSuit();
+        validRank = card.getRank();
     }
 
     private void loadCardBack() {
@@ -188,6 +195,7 @@ public class GameView extends View {
                 break;
 
             case MotionEvent.ACTION_UP:
+                checkValidPlay(x, y);
                 movingCardId = -1;
                 break;
         }
@@ -195,6 +203,30 @@ public class GameView extends View {
         invalidate();
 
         return true;
+    }
+
+    private void checkValidPlay(int x, int y) {
+        if (movingCardId > -1 && isPile(x, y)) {
+            Card card = myHand.get(movingCardId);
+            int rank = card.getRank(),
+                suit = card.getSuit();
+            if (rank == 8 || rank == validRank || suit == validSuit) {
+                validRank = rank;
+                validSuit = suit;
+                discardPile.add(0, card);
+                myHand.remove(movingCardId);
+            }
+        }
+    }
+
+    private boolean isPile(int x, int y) {
+        int offset = (int) (100 * scale),
+                width = screenWidth / 2,
+                height = screenHeight / 2;
+        return x > width - offset &&
+                x < width + offset &&
+                y > height - offset &&
+                y < height + offset;
     }
 
     private int offset(int i) {
