@@ -1,5 +1,6 @@
 package pl.ekhart.crazyeights;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,11 @@ import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -215,6 +221,8 @@ public class GameView extends View {
                 validSuit = suit;
                 discardPile.add(0, card);
                 myHand.remove(movingCardId);
+                if (validRank == 8)
+                    showChooseSuitDialog();
             }
         }
     }
@@ -272,5 +280,50 @@ public class GameView extends View {
             drawCard(myHand);
             drawCard(oppHand);
         }
+    }
+
+    private void showChooseSuitDialog() {
+        final Dialog chooseSuit = new Dialog(context);
+        chooseSuit.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        chooseSuit.setContentView(R.layout.choose_suit_dialog);
+
+        final Spinner suitSpinner = (Spinner) chooseSuit.findViewById(R.id.suitSpinner);
+
+        int spinnerItem = android.R.layout.simple_spinner_item;
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                context, R.array.suits, spinnerItem);
+
+        int dropdownItem = android.R.layout.simple_spinner_dropdown_item;
+        adapter.setDropDownViewResource(dropdownItem);
+
+        suitSpinner.setAdapter(adapter);
+
+        Button okButton = (Button) chooseSuit.findViewById(R.id.okButton);
+        OnClickListener listener = new OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                validSuit = getSelectedSuit();
+                chooseSuit.dismiss();
+                Toast.makeText(context, "You chose " + getSuitText(), Toast.LENGTH_SHORT)
+                        .show();
+            }
+
+            private int getSelectedSuit() {
+                return (suitSpinner.getSelectedItemPosition() + 1) * 100;
+            }
+        };
+        okButton.setOnClickListener(listener);
+        chooseSuit.show();
+    }
+
+    private String getSuitText() {
+        switch (validSuit) {
+            case 100: return "Diamonds";
+            case 200: return "Clubs";
+            case 300: return "Hearts";
+            case 400: return "Spades";
+        }
+        return "";
     }
 }
