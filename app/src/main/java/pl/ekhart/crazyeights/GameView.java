@@ -19,6 +19,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Ekh on 2015-06-07.
@@ -52,6 +53,8 @@ public class GameView extends View {
         validSuit = 0;
 
     private Bitmap nextCardButton;
+
+    private ComputerPlayer computerPlayer = new ComputerPlayer();
 
     public GameView(Context context) {
         super(context);
@@ -99,15 +102,50 @@ public class GameView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         screenWidth = w;
         screenHeight = h;
-        initCards();
         loadCardBack();
+        loadNextCardButton();
+
+        initCards();
         dealCards();
         drawCard(discardPile);
 
         Card card = discardPile.get(0);
         validSuit = card.getSuit();
         validRank = card.getRank();
-        loadNextCardButton();
+
+        myTurn = new Random().nextBoolean();
+        if (!myTurn) {
+            makeComputerPlay();
+        }
+    }
+
+    private void makeComputerPlay() {
+        int play = 0;
+        while (play == 0) {
+            play = computerPlayer.makePlay(oppHand, validSuit, validRank);
+            if (play == 0)
+                drawCard(oppHand);
+        }
+
+        if (isEight(play)) {
+            validRank = 8;
+            validSuit = computerPlayer.chooseSuit(oppHand);
+            Toast.makeText(context, "Computer chose " + getSuitText(), Toast.LENGTH_SHORT)
+                .show();
+        } else {
+            validSuit = Math.round((play / 100) * 100);
+            validRank = play - validSuit;
+        }
+
+        for (int i = 0; i < oppHand.size(); ++i) {
+            Card card = oppHand.get(i);
+            if (play == card.getId()) {
+                discardPile.add(0, card);
+                oppHand.remove(i);
+            }
+        }
+
+        myTurn = true;
     }
 
     private void loadNextCardButton() {
@@ -222,8 +260,8 @@ public class GameView extends View {
                 break;
 
             case MotionEvent.ACTION_UP:
-                cycleThroughCards(x, y);
                 checkValidPlay(x, y);
+                cycleThroughCards(x, y);
                 movingCardId = -1;
                 break;
         }
@@ -264,8 +302,16 @@ public class GameView extends View {
                 validSuit = suit;
                 discardPile.add(0, card);
                 myHand.remove(movingCardId);
-                if (validRank == 8)
-                    showChooseSuitDialog();
+                if (myHand.isEmpty()) {
+
+                } else {
+                    if (validRank == 8)
+                        showChooseSuitDialog();
+                    else {
+                        myTurn = false;
+                        makeComputerPlay();
+                    }
+                }
             }
         }
     }
@@ -350,6 +396,8 @@ public class GameView extends View {
                 chooseSuit.dismiss();
                 Toast.makeText(context, "You chose " + getSuitText(), Toast.LENGTH_SHORT)
                         .show();
+                myTurn = false;
+                makeComputerPlay();
             }
 
             private int getSelectedSuit() {
@@ -377,11 +425,14 @@ public class GameView extends View {
             int id = card.getId(),
                 rank = card.getRank(),
                 suit = card.getSuit();
-            if (validSuit == suit || validRank == rank
-            || id == 108 || id == 208 || id == 308 || id == 408) {
+            if (validSuit == suit || validRank == rank  || isEight(id)) {
                 canDraw = false;
             }
         }
         return canDraw;
+    }
+
+    private boolean isEight(int id) {
+        return id == 108 || id == 208 || id == 308 || id == 408;
     }
 }
