@@ -51,6 +51,8 @@ public class GameView extends View {
     private int validRank = 8,
         validSuit = 0;
 
+    private Bitmap nextCardButton;
+
     public GameView(Context context) {
         super(context);
         this.context = context;
@@ -105,6 +107,11 @@ public class GameView extends View {
         Card card = discardPile.get(0);
         validSuit = card.getSuit();
         validRank = card.getRank();
+        loadNextCardButton();
+    }
+
+    private void loadNextCardButton() {
+        nextCardButton = BitmapFactory.decodeResource(getResources(), R.drawable.arrow_next);
     }
 
     private void loadCardBack() {
@@ -123,14 +130,28 @@ public class GameView extends View {
     }
 
     private void moveCard(Canvas canvas) {
+        if (myHand.size() > CARDS_TO_DEAL) {
+            drawNextCardButton(canvas);
+        }
+
         for (int i = 0; i < myHand.size(); ++i) {
-            Bitmap bitmap = myHand.get(i).getBitmap();
-            boolean isMovingCard = i == movingCardId;
-            int left = isMovingCard ? movingX : getCardLeft(i),
-                top = isMovingCard ? movingY : getCardTop();
-                canvas.drawBitmap(bitmap, left, top, null);
+            drawMyCard(canvas, i);
         }
         invalidate();
+    }
+
+    private void drawMyCard(Canvas canvas, int i) {
+        Bitmap bitmap = myHand.get(i).getBitmap();
+        boolean isMovingCard = i == movingCardId;
+        int left = isMovingCard ? movingX : getCardLeft(i),
+            top = isMovingCard ? movingY : getCardTop();
+        canvas.drawBitmap(bitmap, left, top, null);
+    }
+
+    private void drawNextCardButton(Canvas canvas) {
+        int left = screenWidth - nextCardButton.getWidth() - offset(30),
+            top = screenHeight - nextCardButton.getHeight() - offset(90);
+        canvas.drawBitmap(nextCardButton, left, top, null);
     }
 
     private void drawDiscardPile(Canvas canvas) {
@@ -201,6 +222,7 @@ public class GameView extends View {
                 break;
 
             case MotionEvent.ACTION_UP:
+                cycleThroughCards(x, y);
                 checkValidPlay(x, y);
                 movingCardId = -1;
                 break;
@@ -211,8 +233,29 @@ public class GameView extends View {
         return true;
     }
 
+    private void cycleThroughCards(int x, int y) {
+        if (myHand.size() > CARDS_TO_DEAL && nextCardClicked(x, y)) {
+            Collections.rotate(myHand, 1);
+        }
+    }
+
+    private boolean nextCardClicked(int x, int y) {
+        int width = screenWidth - nextCardButton.getWidth() - offset(30),
+            height = screenHeight - nextCardButton.getHeight() - scaledCardWidth;
+        return x > width &&
+            y > height - offset(90) &&
+            y < height - offset(60);
+    }
+
     private void checkValidPlay(int x, int y) {
         if (movingCardId > -1 && isPile(x, y)) {
+            if (myTurn && checkForValidDraw()) {
+                drawCard(myHand);
+            } else {
+                Toast.makeText(context, "You have a valid play.", Toast.LENGTH_SHORT)
+                    .show();
+            }
+
             Card card = myHand.get(movingCardId);
             int rank = card.getRank(),
                 suit = card.getSuit();
@@ -325,5 +368,20 @@ public class GameView extends View {
             case 400: return "Spades";
         }
         return "";
+    }
+
+    private boolean checkForValidDraw() {
+        boolean canDraw = true;
+        for (int i = 0; i < myHand.size(); ++i) {
+            Card card =  myHand.get(i);
+            int id = card.getId(),
+                rank = card.getRank(),
+                suit = card.getSuit();
+            if (validSuit == suit || validRank == rank
+            || id == 108 || id == 208 || id == 308 || id == 408) {
+                canDraw = false;
+            }
+        }
+        return canDraw;
     }
 }
