@@ -7,9 +7,10 @@ import android.graphics.Bitmap;
  */
 public class Card {
 
-    private int id,
-        suit,
-        rank;
+    private int id;
+    private int suit;
+    private int rank;
+    private int scoreValue;
     private Bitmap bitmap;
 
     public int getId() {
@@ -28,6 +29,17 @@ public class Card {
         this.id = id;
         suit = Math.round((id / 100) * 100);
         rank = id - suit;
+        scoreValue = getScoreValue(rank);
+    }
+
+    private int getScoreValue(int rank) {
+        switch (rank) {
+            case 8: return 50;
+            case 14: return 1;
+        }
+        if (rank > 9 && rank < 14)
+            return 10;
+        return rank;
     }
 
     public int getSuit() {
@@ -36,5 +48,9 @@ public class Card {
 
     public int getRank() {
         return rank;
+    }
+
+    public int getScoreValue() {
+        return scoreValue;
     }
 }

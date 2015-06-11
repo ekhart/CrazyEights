@@ -14,6 +14,7 @@ import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -55,6 +56,11 @@ public class GameView extends View {
     private Bitmap nextCardButton;
 
     private ComputerPlayer computerPlayer = new ComputerPlayer();
+
+    private int scoreThisHand = 0;
+    private int endHandText;
+    private byte nextHandButtonText;
+
 
     public GameView(Context context) {
         super(context);
@@ -106,6 +112,11 @@ public class GameView extends View {
         loadNextCardButton();
 
         initCards();
+        myTurn = new Random().nextBoolean();
+        restartGame();
+    }
+
+    private void restartGame() {
         dealCards();
         drawCard(discardPile);
 
@@ -113,7 +124,6 @@ public class GameView extends View {
         validSuit = card.getSuit();
         validRank = card.getRank();
 
-        myTurn = new Random().nextBoolean();
         if (!myTurn) {
             makeComputerPlay();
         }
@@ -144,6 +154,9 @@ public class GameView extends View {
                 oppHand.remove(i);
             }
         }
+
+        if (oppHand.isEmpty())
+            endHand();
 
         myTurn = true;
     }
@@ -287,12 +300,12 @@ public class GameView extends View {
 
     private void checkValidPlay(int x, int y) {
         if (movingCardId > -1 && isPile(x, y)) {
-            if (myTurn && checkForValidDraw()) {
-                drawCard(myHand);
-            } else {
-                Toast.makeText(context, "You have a valid play.", Toast.LENGTH_SHORT)
-                    .show();
-            }
+//            if (myTurn && checkForValidDraw()) {
+//                drawCard(myHand);
+//            } else {
+//                Toast.makeText(context, "You have a valid play.", Toast.LENGTH_SHORT)
+//                    .show();
+//            }
 
             Card card = myHand.get(movingCardId);
             int rank = card.getRank(),
@@ -303,7 +316,7 @@ public class GameView extends View {
                 discardPile.add(0, card);
                 myHand.remove(movingCardId);
                 if (myHand.isEmpty()) {
-
+                    endHand();
                 } else {
                     if (validRank == 8)
                         showChooseSuitDialog();
@@ -372,11 +385,8 @@ public class GameView extends View {
     }
 
     private void showChooseSuitDialog() {
-        final Dialog chooseSuit = new Dialog(context);
-        chooseSuit.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        chooseSuit.setContentView(R.layout.choose_suit_dialog);
-
-        final Spinner suitSpinner = (Spinner) chooseSuit.findViewById(R.id.suitSpinner);
+        final Dialog chooseSuit = getDialog(R.layout.choose_suit_dialog);
+        final Spinner suitSpinner = getViewById(chooseSuit, R.id.suitSpinner);
 
         int spinnerItem = android.R.layout.simple_spinner_item;
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
@@ -387,7 +397,7 @@ public class GameView extends View {
 
         suitSpinner.setAdapter(adapter);
 
-        Button okButton = (Button) chooseSuit.findViewById(R.id.okButton);
+        Button okButton = getViewById(chooseSuit, R.id.okButton);
         OnClickListener listener = new OnClickListener() {
 
             @Override
@@ -406,6 +416,17 @@ public class GameView extends View {
         };
         okButton.setOnClickListener(listener);
         chooseSuit.show();
+    }
+
+    private static <T extends View> T getViewById(Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
+    }
+
+    private Dialog getDialog(int layoutId) {
+        final Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(layoutId);
+        return dialog;
     }
 
     private String getSuitText() {
@@ -434,5 +455,77 @@ public class GameView extends View {
 
     private boolean isEight(int id) {
         return id == 108 || id == 208 || id == 308 || id == 408;
+    }
+
+    private void updateScores() {
+        for (Card card : myHand) {
+            int value = card.getScoreValue();
+            oppScore += value;
+            scoreThisHand += value;
+        }
+
+        for (Card card : oppHand) {
+            int value = card.getScoreValue();
+            myScore += value;
+            scoreThisHand += value;
+        }
+    }
+
+    private void endHand() {
+        final Dialog endHandDialog = getDialog(R.layout.end_hand_dialog);
+
+        updateScores();
+
+        GameView.<TextView>getViewById(endHandDialog, R.id.endHandText)
+                .setText(getEndHandText());
+
+        Button nextHand = getViewById(endHandDialog, R.id.nextHandButton);
+        nextHand.setText(getNextHandButtonText());
+        nextHand.setOnClickListener(getNextHandOnClick(endHandDialog));
+
+        endHandDialog.show();
+    }
+
+    private OnClickListener getNextHandOnClick(final Dialog endHandDialog) {
+        return new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initNewHand();
+                endHandDialog.dismiss();
+            }
+        };
+    }
+
+    private void initNewHand() {
+        scoreThisHand = 0;
+        if (myHand.isEmpty())
+            myTurn = true;
+        else if (oppHand.isEmpty())
+            myTurn = false;
+
+        deck.addAll(discardPile);
+        deck.addAll(myHand);
+        deck.addAll(oppHand);
+
+        discardPile.clear();
+        myHand.clear();
+        oppHand.clear();
+
+        restartGame();
+    }
+
+    public String getEndHandText() {
+        if (myHand.isEmpty()) {
+            return  "You went out and got "
+                    + scoreThisHand + " points!";
+        } else if (oppHand.isEmpty()) {
+            return "The computer went out and got "
+                    + scoreThisHand + " points.";
+        }
+        return "";
+    }
+
+    public String getNextHandButtonText() {
+        return oppScore >= 300 || myScore >= 300 ? "New Game" : "";
     }
 }
