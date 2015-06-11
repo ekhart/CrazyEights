@@ -490,6 +490,9 @@ public class GameView extends View {
         return new OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (oppScore >= 300 || myScore >= 300) {
+                    myScore = oppScore =  0;
+                }
                 initNewHand();
                 endHandDialog.dismiss();
             }
@@ -515,12 +518,15 @@ public class GameView extends View {
     }
 
     public String getEndHandText() {
+        String replay = "Would you like to play again?";
         if (myHand.isEmpty()) {
-            return  "You went out and got "
-                    + scoreThisHand + " points!";
+            return myScore >= 300 ?
+                "You reached " + myScore + " points. You won! " + replay:
+                "You went out and got " + scoreThisHand + " points!";
         } else if (oppHand.isEmpty()) {
-            return "The computer went out and got "
-                    + scoreThisHand + " points.";
+            return oppScore >= 300 ?
+                "The computer reached " + oppScore + " points. Sorry, you lost. " + replay :
+                "The computer went out and got " + scoreThisHand + " points.";
         }
         return "";
     }
