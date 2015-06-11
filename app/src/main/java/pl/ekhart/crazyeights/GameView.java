@@ -274,6 +274,7 @@ public class GameView extends View {
 
             case MotionEvent.ACTION_UP:
                 checkValidPlay(x, y);
+                checkPlayerDraw(x, y);
                 cycleThroughCards(x, y);
                 movingCardId = -1;
                 break;
@@ -282,6 +283,17 @@ public class GameView extends View {
         invalidate();
 
         return true;
+    }
+
+    private void checkPlayerDraw(int x, int y) {
+        if (movingCardId == -1 && isPile(x, y) && myTurn) {
+            if (checkForValidDraw()) {
+                drawCard(myHand);
+            } else {
+                Toast.makeText(context, "You have a valid play.", Toast.LENGTH_SHORT)
+                    .show();
+            }
+        }
     }
 
     private void cycleThroughCards(int x, int y) {
@@ -300,13 +312,6 @@ public class GameView extends View {
 
     private void checkValidPlay(int x, int y) {
         if (movingCardId > -1 && isPile(x, y)) {
-//            if (myTurn && checkForValidDraw()) {
-//                drawCard(myHand);
-//            } else {
-//                Toast.makeText(context, "You have a valid play.", Toast.LENGTH_SHORT)
-//                    .show();
-//            }
-
             Card card = myHand.get(movingCardId);
             int rank = card.getRank(),
                 suit = card.getSuit();
